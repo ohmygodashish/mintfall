@@ -25,6 +25,16 @@ const getWalletBalance = async() => {
     }
 }
 
+// Function to send Sol
+const airDropSol = async() => {
+    try {
+        const connection = new Connection(clusterApiUrl('devnet'), 'confirmed') // Create a connection object to receive Sol
+        
+    } catch(err) {
+        console.error(err)
+    }
+}
+
 const main = async() => {
     await getWalletBalance()
 }
