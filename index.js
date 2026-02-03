@@ -32,7 +32,7 @@ const getWalletBalance = async() => {
     }
 }
 
-// Function to receive Sol
+// Function to receive SOL
 const airDropSol = async() => {
     try {
         const connection = new Connection(clusterApiUrl('devnet'), 'confirmed') // Create a connection object to receive Sol
@@ -40,16 +40,49 @@ const airDropSol = async() => {
         // 1. Request the airdrop (returns the transaction signature)
         const fromAirDropSignature = await connection.requestAirdrop(publicKey, 2 * LAMPORTS_PER_SOL) // Here we are requesting 2 SOL
         
-        // 2. Fetch the latest blockhash and last valid block height
+        // 2. Fetch the latest blockhash
         const latestBlockhash = await connection.getLatestBlockhash()
-        const blockhash = latestBlockhash.blockhash
-        const lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
 
         // 3. Confirm the transaction
         await connection.confirmTransaction({
-            blockhash, lastValidBlockHeight, fromAirDropSignature
+            blockhash: latestBlockhash.blockhash,
+            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight, // Defines the transactions validity window
+            signature: fromAirDropSignature
+        }, 'confirmed')
+
+    } catch(err) {
+        console.error(err)
+    }
+}
+
+// Create a receiver wallet to transfer SOL into
+const receiver_wallet = new Keypair()
+const address = new PublicKey(receiver_wallet._keypair.publicKey)
+
+// Function to transfer SOL
+const transferSol = async() => {
+    try {
+        const connection = new Connection(clusterApiUrl('devnet'), 'confirmed')
+
+        // 1. Create a transfer instruction for the transaction
+        const transferInstruction = SystemProgram.transfer({
+            fromPubkey: publicKey, 
+            toPubkey: address, 
+            lamports: LAMPORTS_PER_SOL
         })
 
+        // 2. Initiate the transaction
+        const transaction = new Transaction().add(transferInstruction)
+
+        // 3. Sign the transaction and send to the SOL network
+        const transactionSignature = await sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [wallet]
+        )
+        console.log('Transaction Signature: ', `${transactionSignature}`)
+        console.log('Receiver Balance is: ', `${await connection.getBalance(address)}`)
+        
     } catch(err) {
         console.error(err)
     }
@@ -59,6 +92,8 @@ const airDropSol = async() => {
 const main = async() => {
     await getWalletBalance()
     await airDropSol()
+    await getWalletBalance()
+    await transferSol()
     await getWalletBalance()
 }
 
