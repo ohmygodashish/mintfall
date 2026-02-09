@@ -10,7 +10,7 @@ A high-performance airdrop and token distribution program built on Solana. Desig
 
 1.  Clone this repository:
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/ohmygodashish/mintfall.git
     cd mintfall
     git checkout main
     ```
